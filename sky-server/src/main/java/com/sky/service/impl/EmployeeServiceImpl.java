@@ -58,7 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         if (employee.getStatus() == StatusConstant.DISABLE) {
-            //账号被锁定
+            //账号被锁定, 抛出自定义异常给全局异常处理器管理报错信息
             throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
 
@@ -95,10 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 调用 持久层
         employeeMapper.insert(employee);
 
-
-
     }
-
 
     /**
      * 分页查询
@@ -118,7 +115,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         Long total = page.getTotal();
         List<Employee> records = page.getResult();
 
-
         return new PageResult(total, records);
     }
 
@@ -135,10 +131,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee employee = Employee.builder().status(status).id(id).build();
 
-
-
         employeeMapper.update(employee);
 
-
     }
+
+    /**
+     * 根据Id查询员工
+     * @param id
+     * @return
+     */
+    public Employee getById(Long id) {
+        // 调用持久层
+        Employee employee = employeeMapper.getById(id);
+        employee.setPassword("***");
+        return employee;
+    }
+
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        // 调用持久层
+        Employee employee = new Employee();
+        // 复制属性到新的对象
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        employee.setUpdateTime(LocalDateTime.now());
+        // 利用ThreadLocal获得id为动态的
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        // 往Mapper层传的是entity类的对象，而不是DTO
+        employeeMapper.update(employee);
+    }
+
+
 }

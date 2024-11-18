@@ -123,9 +123,48 @@ public class EmployeeController {
         // 调用service
         employeeService.startOrStop(status, id);
 
+        return Result.success();
+    }
+
+
+    /**
+     * 根据Id查询员工
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation("根据Id查询员工")
+    public Result<Employee> getById(@PathVariable Long id) {
+        log.info("根据Id查询员工: {}", id);
+        // 调用service层, 得到一个员工类实例
+        Employee employee = employeeService.getById(id);
+
+        /* 可以通过自定义异常的方式交给全局异常处理器来处理
+           这样就不用前端来判断返回的data是不是空信息 （前端可通过状态码code来判断）
+         if (employee == null) {
+            throw new EmployeeNotFoundException("Employee not found");
+         }
+         */
+
+        return Result.success(employee);
+    }
+
+    /**
+     * 修改员工信息
+     * @param employeeDTO
+     * @return
+     */
+    @PutMapping()
+    @ApiOperation("修改员工信息")
+    public Result update(@RequestBody EmployeeDTO employeeDTO) {
+        log.info("修改员工信息: {}", employeeDTO);
+        // 调用service层
+        employeeService.update(employeeDTO);
 
         return Result.success();
     }
+
+
 
 
 }
