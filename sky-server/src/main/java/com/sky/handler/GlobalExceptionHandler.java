@@ -24,6 +24,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public Result exceptionHandler(BaseException ex){
         log.error("异常信息：{}", ex.getMessage());
+
+        // 输出对应自定义异常的报错信息（BaseException类是自定义的，其他只用输出固定message的自定义异常都继承该base并重写msg）
         return Result.error(ex.getMessage());
     }
 
