@@ -83,13 +83,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 设置密码
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
 
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+        // 设置创建与修改时间
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
 
         // 设置创建人与修改人的id
         // 利用ThreadLocal获得id为动态的, 即为当前登录用户的id
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+//        employee.setCreateUser(BaseContext.getCurrentId());
+//        employee.setUpdateUser(BaseContext.getCurrentId());
 
 
         // 调用 持久层
@@ -154,9 +155,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 复制属性到新的对象
         BeanUtils.copyProperties(employeeDTO, employee);
 
-        employee.setUpdateTime(LocalDateTime.now());
-        // 利用ThreadLocal获得id为动态的
-        employee.setUpdateUser(BaseContext.getCurrentId());
+//        employee.setUpdateTime(LocalDateTime.now());
+//        // 利用ThreadLocal获得id为动态的
+//        employee.setUpdateUser(BaseContext.getCurrentId());
 
         // 往Mapper层传的是entity类的对象，而不是DTO
         employeeMapper.update(employee);
