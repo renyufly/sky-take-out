@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 处理SQL异常
+     * 处理SQL异常 (插入同一条数据产生的报错)
      * @param ex
      * @return
      */
