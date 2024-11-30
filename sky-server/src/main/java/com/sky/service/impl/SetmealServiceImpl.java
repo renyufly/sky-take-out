@@ -6,12 +6,16 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
+import com.sky.service.DishService;
 import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,9 @@ public class SetmealServiceImpl implements SetmealService {
     @Autowired
     private SetmealDishMapper setmealDishMapper;
 
+
+    @Autowired
+    private DishMapper dishMapper;
 
     /**
      * 新增套餐, 同时需要保存套餐和菜品的关联关系
@@ -156,6 +163,38 @@ public class SetmealServiceImpl implements SetmealService {
 
         // 批量插入
         setmealDishMapper.insertBatch(setmealDishes);
+
+
+    }
+
+    /**
+     * 套餐启售停售
+     * @param status
+     * @param id
+     */
+    public void startOrStop(Integer status, Long id) {
+        // 如果要启售套餐，需判断套餐里有无停售菜品，若有停售则整个操作取消
+        if(status == StatusConstant.ENABLE) {
+            // 获取关联的所有菜品 (借助关联表与dish表的拼接)
+            List<Dish> dishList = dishMapper.getBySetmealId(id);
+
+            if(dishList != null && dishList.size() > 0) {
+                dishList.forEach(dish -> {
+                    if(dish.getStatus() == StatusConstant.DISABLE) {
+                        throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                    }
+                });
+            }
+
+        }
+
+        Setmeal setmeal = Setmeal.builder()
+                .id(id)
+                .status(status)
+                .build();
+
+        // 直接update数据即可
+        setmealMapper.update(setmeal);
 
 
     }
