@@ -10,6 +10,29 @@
         , #{updateUser})
     </insert>
 
+    <select id="pageQuery" resultType="com.sky.vo.SetmealVO">
+        select s.* , c.name categoryName from setmeal s left join category c on s.category_id = c.id
+        <where>
+            <if test="name != null">
+                <!--按照套餐名模糊查询-->
+                <!-- 要指明是哪个表的字段 -->
+                and s.name like concat('%', #{name}, '%')
+            </if>
+            <if test="status != null">
+                <!--按照启售停售状态查询-->
+                and s.status = #{status}
+            </if>
+            <if test="categoryId != null">
+                <!--按照分类id查询-->
+                and s.category_id = #{categoryId}
+            </if>
+        </where>
+
+        <!-- 将结果按套餐的创建时间降序排列-->
+        order by s.create_time desc
+
+    </select>
+
 
 
 </mapper>
