@@ -170,8 +170,23 @@ public class DishServiceImpl implements DishService {
         }
 
 
+    }
 
 
+    /**
+     * 根据分类id查询菜品集合
+     * @param categoryId
+     * @return
+     */
+    public List<Dish> list(Long categoryId) {
 
+        // 借助一个实体类对象来传递参数（注意得是启售的菜品）
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+
+
+        return dishMapper.list(dish);
     }
 }
