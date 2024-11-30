@@ -2,10 +2,13 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -79,4 +82,83 @@ public class SetmealServiceImpl implements SetmealService {
 
         return new PageResult(page.getTotal(), page.getResult());
     }
+
+    /**
+     * 根据id批量删除套餐
+     * @param ids
+     */
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
+
+        // 先判断套餐是不是启售，如果是启售状态，整个操作要取消
+        ids.forEach(id->{
+            Setmeal setmeal = setmealMapper.getById(id);
+            if(StatusConstant.ENABLE == setmeal.getStatus()) {
+                throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
+            }
+        });
+
+        /* TODO 可以优化成批量删除的语句 */
+        ids.forEach(id->{
+            // 删除套餐表
+            setmealMapper.deleteById(id);
+            // 同时删除关联表
+            setmealDishMapper.deleteBySetmealId(id);
+        });
+
+    }
+
+    /**
+     * 根据id查询套餐
+     * @param id
+     * @return
+     */
+    public SetmealVO getByIdWithDish(Long id) {
+
+        SetmealVO setmealVO = new SetmealVO();
+
+        Setmeal setmeal = setmealMapper.getById(id);
+
+        BeanUtils.copyProperties(setmeal, setmealVO);
+
+        // 查询关联的菜品
+        List<SetmealDish> setmealDishes = setmealDishMapper.getBySetmealId(id);
+
+        setmealVO.setSetmealDishes(setmealDishes);
+
+        return setmealVO;
+    }
+
+    /**
+     * 修改套餐
+     * @param setmealDTO
+     */
+    @Transactional
+    public void update(SetmealDTO setmealDTO) {
+
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+
+        // 向套餐表修改数据
+        setmealMapper.update(setmeal);
+
+        // 根据套餐id删除原来关联表中的数据
+        Long setmealId = setmeal.getId();  // 注意在xml中要配置参数
+
+        setmealDishMapper.deleteBySetmealId(setmealId);
+
+        // 再向关联表添加新的数据
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        setmealDishes.forEach(setmealDish -> {
+            // 先设置setmealId
+            setmealDish.setSetmealId(setmealId);
+        });
+
+        // 批量插入
+        setmealDishMapper.insertBatch(setmealDishes);
+
+
+    }
+
+
 }
