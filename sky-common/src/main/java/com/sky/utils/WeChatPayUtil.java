@@ -80,14 +80,17 @@ public class WeChatPayUtil {
      * @return
      */
     private String post(String url, String body) throws Exception {
+        // 底层使用HttpClient
         CloseableHttpClient httpClient = getClient();
 
         HttpPost httpPost = new HttpPost(url);
+        // 设置要求的请求头
         httpPost.addHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
         httpPost.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         httpPost.addHeader("Wechatpay-Serial", weChatProperties.getMchSerialNo());
         httpPost.setEntity(new StringEntity(body, "UTF-8"));
 
+        // 调用execute方法
         CloseableHttpResponse response = httpClient.execute(httpPost);
         try {
             String bodyAsString = EntityUtils.toString(response.getEntity());
@@ -132,6 +135,7 @@ public class WeChatPayUtil {
      * @return
      */
     private String jsapi(String orderNum, BigDecimal total, String description, String openid) throws Exception {
+        // 准备封装调用接口所需的Json参数
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("appid", weChatProperties.getAppid());
         jsonObject.put("mchid", weChatProperties.getMchid());
@@ -151,6 +155,8 @@ public class WeChatPayUtil {
         jsonObject.put("payer", payer);
 
         String body = jsonObject.toJSONString();
+
+        // 调用post方式请求
         return post(JSAPI, body);
     }
 
@@ -166,12 +172,14 @@ public class WeChatPayUtil {
     public JSONObject pay(String orderNum, BigDecimal total, String description, String openid) throws Exception {
         //统一下单，生成预支付交易单
         String bodyAsString = jsapi(orderNum, total, description, openid);
-        //解析返回结果
+
+        //解析返回结果 （预支付交易标识）
         JSONObject jsonObject = JSON.parseObject(bodyAsString);
         System.out.println(jsonObject);
 
         String prepayId = jsonObject.getString("prepay_id");
         if (prepayId != null) {
+            // 封装，对数据进行加密和签名
             String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
             String nonceStr = RandomStringUtils.randomNumeric(32);
             ArrayList<Object> list = new ArrayList<>();
@@ -192,7 +200,7 @@ public class WeChatPayUtil {
             signature.update(message);
             String packageSign = Base64.getEncoder().encodeToString(signature.sign());
 
-            //构造数据给微信小程序，用于调起微信支付
+            //构造数据给微信小程序，用于小程序调起微信支付
             JSONObject jo = new JSONObject();
             jo.put("timeStamp", timeStamp);
             jo.put("nonceStr", nonceStr);
