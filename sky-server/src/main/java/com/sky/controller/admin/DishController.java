@@ -12,9 +12,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 菜品管理
@@ -29,6 +31,25 @@ public class DishController {
     private DishService dishService;
 
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+
+    /**
+     * 清理Redis缓存数据
+     * @param pattern
+     */
+    private void cleanCache(String pattern) {
+        // 根据pattern获取对应匹配到的Redis中的所有key
+        Set keys = redisTemplate.keys(pattern);
+
+        // 删除这些key 及 对应的value
+        redisTemplate.delete(keys);
+
+    }
+
+
+
     /**
      * 新增菜品
      * @param dishDTO
@@ -40,6 +61,13 @@ public class DishController {
         log.info("新增菜品：{}", dishDTO);
 
         dishService.saveWithFlavor(dishDTO);
+
+
+        // 菜品信息修改后，清理缓存数据
+        String redis_key = "dish_" + dishDTO.getCategoryId();
+        // 将对应分类id数据全部清除，这样下次用户查询时是加入了新的菜品
+        cleanCache(redis_key);
+
 
         return Result.success();
     }
@@ -62,16 +90,19 @@ public class DishController {
 
 
     /**
-     * 删除菜品
+     * 批量删除菜品
      * @param ids
      * @return
      */
     @DeleteMapping()
-    @ApiOperation("删除菜品")
+    @ApiOperation("批量删除菜品")
     public Result delete(@RequestParam List<Long> ids) {
         log.info("菜品批量删除：{}", ids);
 
         dishService.deleteBatch(ids);
+
+        // 修改完菜品数据后，清理Redish缓存 (直接把整个redis的数据清空)
+        cleanCache("dish_*");
 
         return Result.success();
     }
@@ -104,6 +135,9 @@ public class DishController {
         log.info("修改菜品：{}", dishDTO);
 
         dishService.updateWithFlavor(dishDTO);
+
+        // 清除 全部 的缓存 (可能修改的是菜品的分类；修改分类的操作实际很少，所以就不复杂化处理判断是否修改了分类)
+        cleanCache("dish_*");
 
 
         return Result.success();
@@ -138,6 +172,11 @@ public class DishController {
         log.info("菜品启售停售:{}, {}", status, id);
 
         dishService.startOrStop(status, id);
+
+
+        // 直接清除所有缓存 （也可以通过指定分类id删除对应的。但传入参数是菜品id，还需要再次查询数据库）
+        cleanCache("dish_*");
+
 
         return Result.success();
     }
