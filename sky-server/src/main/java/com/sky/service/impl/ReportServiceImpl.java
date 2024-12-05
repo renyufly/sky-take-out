@@ -243,49 +243,53 @@ public class ReportServiceImpl implements ReportService {
      */
     public void exportBusinessData(HttpServletResponse response) {
 
+        // 查询近30天的日期
         LocalDate begin = LocalDate.now().minusDays(30);
         LocalDate end = LocalDate.now().minusDays(1);
 
-        // 查询概览运营数据，提供给Excel模板文件
+        // 查询概览运营数据 （Impl实现类中也可以注入别的service）
         BusinessDataVO businessData = workspaceService.getBusinessData(LocalDateTime.of(begin, LocalTime.MIN),
                 LocalDateTime.of(end, LocalTime.MAX));
 
+        // 反射获得类对象，类加载器 获得一个输入流对象
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("template/template.xlsx");
 
         try {
 
-            //基于提供好的模板文件创建一个新的Excel表格对象
+            //基于提供好的模板文件输入流对象 创建 一个新的Excel表格对象
             XSSFWorkbook excel = new XSSFWorkbook(inputStream);
 
             // 获得Excel文件中的一个Sheet页
             XSSFSheet sheet = excel.getSheet("Sheet1");
+            // 获取行 单元格并填充时间数据（行索引从0开始）
+            sheet.getRow(1).getCell(1).setCellValue(begin + "to" + end);
 
-            sheet.getRow(1).getCell(1).setCellValue(begin + "至" + end);
-
-            // 获得第4行
+            // 获得第4行对象
             XSSFRow row = sheet.getRow(3);
-            // 获取单元格
+            // 获取单元格 并 填充数据（营业额、有效订单率、新增用户数）
             row.getCell(2).setCellValue(businessData.getTurnover());
 
             row.getCell(4).setCellValue(businessData.getOrderCompletionRate());
 
             row.getCell(6).setCellValue(businessData.getNewUsers());
 
+            // 切换行 并 填充数据
             row = sheet.getRow(4);
 
             row.getCell(2).setCellValue(businessData.getValidOrderCount());
 
-            // 平均客单价
-            row.getCell(4).setCellValue(businessData.getUnitPrice());
+            row.getCell(4).setCellValue(businessData.getUnitPrice()); // 平均客单价
 
 
             for(int i=0; i<30; i++) {
+                // 遍历每天的数据
                 LocalDate data = begin.plusDays(i);
 
-                // 准备明细数据
+                // 准备明细数据 （按天查询）
                 businessData = workspaceService.getBusinessData(LocalDateTime.of(data, LocalTime.MIN),
                         LocalDateTime.of(data, LocalTime.MAX));
 
+                // 填充明细数据
                 row = sheet.getRow(7 + i);
 
                 row.getCell(1).setCellValue(data.toString());
@@ -300,14 +304,12 @@ public class ReportServiceImpl implements ReportService {
                 row.getCell(5).setCellValue(businessData.getUnitPrice());
 
                 row.getCell(6).setCellValue(businessData.getNewUsers());
-
-
-
             }
 
             // 通过输出流将文件下载到客户端浏览器中
             ServletOutputStream outputStream = response.getOutputStream();
 
+            // 写回浏览器
             excel.write(outputStream);
 
             // 关闭资源
@@ -319,9 +321,16 @@ public class ReportServiceImpl implements ReportService {
             e.printStackTrace();
         }
 
-
     }
 
+
+    /**
+     * 获取订单数
+     * @param beginTime
+     * @param endTime
+     * @param status
+     * @return
+     */
     private Integer getOrderCount(LocalDateTime beginTime, LocalDateTime endTime, Integer status) {
 
         Map map = new HashMap<>();
@@ -334,6 +343,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
 
+    /**
+     * 获取用户数
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
     private Integer getUserCount(LocalDateTime beginTime, LocalDateTime endTime) {
 
         Map map = new HashMap<>();
