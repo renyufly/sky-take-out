@@ -81,4 +81,57 @@
     </select>
 
 
+    <select id="sumByMap" resultType="java.lang.Double">
+        select sum(amount) from orders
+        <where>
+            <if test="begin != null">
+                <!-- 这里的begin要严格与传入的Map类型里的key对应-->
+                <!-- 大于小于号 (>, <) 最好使用转义字符 -->
+                and order_time &gt; #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt; #{end}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+
+
+    </select>
+
+    <select id="countByMap" resultType="java.lang.Integer">
+        select count(id) from orders
+        <where>
+            <if test="begin != null">
+                and order_time &gt; #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt; #{end}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getSalesTop10" resultType="com.sky.dto.GoodsSalesDTO">
+        select od.name name, sum(od.number) number from order_detail od, orders o
+        where od.order_id = o.id
+            and o.status = 5
+            <if test="begin != null ">
+                and order_time &gt; #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt; #{end}
+            </if>
+        group by name
+        order by number desc
+        limit 0, 10
+
+
+    </select>
+
+
 </mapper>
