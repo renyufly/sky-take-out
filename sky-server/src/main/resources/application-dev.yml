@@ -4,5 +4,17 @@ sky:
     host: localhost
     port: 3306
     database: sky_take_out
-    username: root
+    username: #
     password: #
+
+  redis:
+    host: localhost
+    port: 6379
+    password: #
+    database: # database编号
+
+
+  wechat:
+    appid: #
+    secret: #
+
