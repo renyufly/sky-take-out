@@ -2,7 +2,7 @@
 
 ## 1. IOC、Bean 与依赖注入
 
-Spring 的核心思想是：对象不由业务代码到处 `new`，而是交给容器创建和管理。
+Spring 的核心思想是：**对象**不由业务代码到处 `new`，而是**交给容器创建和管理**。
 
 本项目中的常见组件：
 
@@ -63,7 +63,7 @@ public class CategoryController {
 }
 ```
 
-`@RestController` 等价于 `@Controller + @ResponseBody`，方法返回值会被消息转换器序列化为 JSON。
+`@RestController` 等价于 `@Controller + @ResponseBody`，方法**返回值会被消息转换器序列化为 JSON**。
 
 ## 3. 四种常见参数绑定
 
@@ -127,7 +127,7 @@ public Result save(@Valid @RequestBody CategoryDTO dto)
 然后在全局异常处理器中处理 `MethodArgumentNotValidException`。校验分两类：
 
 - 格式校验放 DTO，例如非空、长度、邮箱格式；
-- 业务校验放 Service，例如“启售菜品不能删除”。
+- **业务校验放 Service**，例如“启售菜品不能删除”。
 
 ## 5. DTO、Entity 和 VO
 
@@ -172,7 +172,7 @@ class Result<T> {
 
 ## 7. 分页接口
 
-本项目使用 PageHelper：
+本项目使用 **PageHelper**：
 
 ```java
 PageHelper.startPage(dto.getPage(), dto.getPageSize());
@@ -191,8 +191,8 @@ return new PageResult(page.getTotal(), page.getResult());
 ## 8. 接口设计面试要点
 
 - GET 查询应尽量无副作用；POST 新增；PUT 完整或语义明确的修改；DELETE 删除。
-- 资源名尽量使用名词，版本化可使用 `/api/v1/...`。
-- 列表必须考虑分页，不能无限返回。
+- **资源名尽量使用名词**，版本化可使用 `/api/v1/...`。
+- **列表必须考虑分页**，不能无限返回。
 - 新增操作应考虑重复提交；支付、回调必须实现幂等。
 - 不在日志中打印密码、完整 token、身份证等敏感数据。
 - 接口变更要考虑向后兼容。

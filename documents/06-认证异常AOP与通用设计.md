@@ -20,7 +20,7 @@ claims.put("empId", employee.getId());
 String token = JwtUtil.createJWT(secretKey, ttl, claims);
 ```
 
-JWT 通常由 Header、Payload、Signature 三部分组成。Payload 只是 Base64URL 编码，不是加密，不能放密码等敏感数据。签名用于防篡改。
+JWT 通常由 Header、Payload、Signature 三部分组成。Payload 只是 Base64URL 编码，不是加密，不能放密码等敏感数据。**签名用于防篡改**。
 
 ## 2. 拦截器校验
 
@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
 throw new DeletionNotAllowedException("启售中的菜品不能删除");
 ```
 
-异常会沿调用栈向上传递，由全局处理器统一转换为响应，避免每个 Controller 重复 try/catch。
+**异常会沿调用栈向上传递**，由**全局处理器统一转换为响应**，避免每个 Controller 重复 try/catch。
 
 生产增强建议：
 
@@ -138,7 +138,7 @@ UPDATE: updateTime, updateUser
 AOP 概念：
 
 - Aspect：切面，封装横切逻辑。
-- Pointcut：切点，决定拦截哪些方法。
+- Pointcut：切点，决定**拦截哪些方法**。
 - Advice：通知，决定何时执行，如 Before、After、Around。
 - Join Point：被拦截的方法调用点。
 

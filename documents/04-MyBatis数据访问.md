@@ -9,7 +9,7 @@ Mapper 方法 + 参数 → SQL → JDBC → MySQL
 MySQL ResultSet → Java Entity / VO
 ```
 
-与纯 JDBC 相比，它减少连接、参数绑定、结果映射等样板代码；与全自动 ORM 相比，它保留 SQL 控制能力。
+与纯 JDBC 相比，它减少连接、参数绑定、结果映射等样板代码；**与全自动 ORM 相比，它保留 SQL 控制能力**。
 
 配置位于 `application.yml`：
 
@@ -57,7 +57,7 @@ XML 必须满足：
 where id = #{id}
 ```
 
-`#{}` 使用预编译参数，占位符最终类似 `where id = ?`，能够正确处理类型并降低 SQL 注入风险。
+`#{}` 使用预编译参数，占位符最终类似 `where id = ?`，能够正确处理类型并**降低 SQL 注入**风险。
 
 `${}` 是字符串直接拼接，可能导致 SQL 注入。只有列名、排序方向等无法参数化的位置才可能使用，并且必须通过白名单控制，不能直接接收客户端文本。
 
@@ -72,7 +72,7 @@ where id = #{id}
 void deleteById(Long id);
 ```
 
-复杂、动态、批量 SQL 适合 XML。统一使用 XML 也便于集中维护，具体取决于团队规范。
+**复杂、动态、批量 SQL 适合 XML**。统一使用 XML 也便于集中维护，具体取决于团队规范。
 
 ## 5. 动态 SQL
 
@@ -93,7 +93,7 @@ void deleteById(Long id);
 </select>
 ```
 
-- `<where>` 只在内部有条件时生成 WHERE，并自动处理开头的 AND/OR。
+- `<where>` **只在内部有条件时生成 WHERE**，并自动处理开头的 AND/OR。
 - `<if>` 根据 Java 参数决定是否拼接片段。
 
 动态更新：
